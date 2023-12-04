@@ -48,11 +48,11 @@ class QueryCog(commands.Cog):
 
                 await interaction.followup.send(embed=embed)
             except socket.timeout:
-                interaction.followup.send("Server timeout! Check the IP:Port")
+                await interaction.followup.send("Server timeout! Check the IP:Port")
             except socket.gaierror:
-                interaction.followup.send("Resolution error! Check the IP:Port")
+                await interaction.followup.send("Resolution error! Check the IP:Port")
         except Exception as e:
-            interaction.followup.send("Unknown error! Check the command, and contact support if this continues.")
+            await interaction.followup.send("Unknown error! Check the command, and contact support if this continues.")
             raise e
             
 
