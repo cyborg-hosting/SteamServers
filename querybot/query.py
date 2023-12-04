@@ -27,28 +27,34 @@ class QueryCog(commands.Cog):
         """
         await interaction.response.defer()
 
-        host = await self.db.select_server(interaction.guild_id, query)
-        if not host:
-            host = Host.fromHost(query)
-
         try:
-            info: a2s.SourceInfo = await a2s.ainfo(host)
+            host = await self.db.select_server(interaction.guild_id, query)
+            if not host:
+                try:
+                    host = Host.fromHost(query)
+                except ValueError:
+                    await interaction.response.send("Invalid host")
 
-            embed = discord.Embed(title=info.server_name)
-            embed.set_author(name="Server Informnation")
-            embed.add_field(name="Host", value=str(host))
-            embed.add_field(name="Map", value=info.map_name)
-            embed.add_field(name="Players", value=f'{info.player_count}/{info.max_players}')
-            embed.add_field(name="Game", value=info.game or "Unknown")
-            embed.set_footer(text=("VAC Secured" if info.vac_enabled else "Insecure") + (" + Password Protected" if info.password_protected else ""))
+            try:
+                info: a2s.SourceInfo = await a2s.ainfo(host)
 
-            await interaction.followup.send(embed=embed)
-        except socket.timeout:
-            interaction.followup.send("Server timeout! Check the IP:Port")
-        except socket.gaierror:
-            interaction.followup.send("Resolution error! Check the IP:Port")
-        except Exception:
+                embed = discord.Embed(title=info.server_name)
+                embed.set_author(name="Server Informnation")
+                embed.add_field(name="Host", value=str(host))
+                embed.add_field(name="Map", value=info.map_name)
+                embed.add_field(name="Players", value=f'{info.player_count}/{info.max_players}')
+                embed.add_field(name="Game", value=info.game or "Unknown")
+                embed.set_footer(text=("VAC Secured" if info.vac_enabled else "Insecure") + (" + Password Protected" if info.password_protected else ""))
+
+                await interaction.followup.send(embed=embed)
+            except socket.timeout:
+                interaction.followup.send("Server timeout! Check the IP:Port")
+            except socket.gaierror:
+                interaction.followup.send("Resolution error! Check the IP:Port")
+        except Exception as e:
             interaction.followup.send("Unknown error! Check the command, and contact support if this continues.")
+            raise e
+            
 
 
         
@@ -64,26 +70,31 @@ class QueryCog(commands.Cog):
         """
         await interaction.response.defer()
 
-        host = await self.db.select_server(interaction.guild_id, query)
-        if not host:
-            host = Host.fromHost(query)
-        
         try:
-            info: a2s.SourceInfo = await a2s.aplayers(host)
+            host = await self.db.select_server(interaction.guild_id, query)
+            if not host:
+                try:
+                    host = Host.fromHost(query)
+                except ValueError:
+                    await interaction.response.send("Invalid host")
+            
+            try:
+                info: a2s.SourceInfo = await a2s.aplayers(host)
 
-            if not info or len(info) == 0:
-                await interaction.followup.send("Server is empty!")
-                return
+                if not info or len(info) == 0:
+                    await interaction.followup.send("Server is empty!")
+                    return
 
-            table = ""
-            for player in info:
-                table += "%02d:%02d" % (player.duration // 3600, (player.duration % 3600) // 60) + " | " + player.name + "\n"
-            await interaction.followup.send("```r\n"+str(table)+"```")
-        except socket.timeout:
-            await interaction.followup.send("Server timeout! Check the IP:Port")
-        except socket.gaierror:
-            await interaction.followup.send("Resolution error! Check the IP:Port")
-        except Exception:
+                table = ""
+                for player in info:
+                    table += "%02d:%02d" % (player.duration // 3600, (player.duration % 3600) // 60) + " | " + player.name + "\n"
+                await interaction.followup.send("```r\n"+str(table)+"```")
+            except socket.timeout:
+                await interaction.followup.send("Server timeout! Check the IP:Port")
+            except socket.gaierror:
+                await interaction.followup.send("Resolution error! Check the IP:Port")
+        except Exception as e:
             await interaction.followup.send("Unknown error! Check the command, and contact support if this continues.")
+            raise e
 
 
