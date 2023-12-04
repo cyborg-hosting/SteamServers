@@ -80,14 +80,15 @@ class Database:
     async def insert_server(self, guild_id: int, server: Server) -> bool:
         async with aiosqlite.connect(**self.options) as connection:
             try:
-                connection.execute(r"INSERT INTO server (guild_id, name, address, port) VALUES (?, ?, ?, ?);", (guild_id, server.name, server.host.address, server.host.port))
+                await connection.execute(r"INSERT INTO server (guild_id, name, address, port) VALUES (?, ?, ?, ?);", (guild_id, server.name, server.host.address, server.host.port))
+                await connection.commit()
                 return True
             except sqlite3.IntegrityError:
                 return False
 
     async def delete_server(self, guild_id: int, name: str) -> bool:
         async with aiosqlite.connect(**self.options) as connection:
-            with connection.execute(r"DELETE FROM server WHERE guild_id = ? AND name = ?", (guild_id, name)) as cursor:
+            async with connection.execute(r"DELETE FROM server WHERE guild_id = ? AND name = ?", (guild_id, name)) as cursor:
                 if cursor.rowcount:
                     return True
                 else:
