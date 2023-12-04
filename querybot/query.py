@@ -39,7 +39,7 @@ class QueryCog(commands.Cog):
                 info: a2s.SourceInfo = await a2s.ainfo(host)
 
                 embed = discord.Embed(title=info.server_name)
-                embed.set_author(name="Server Informnation")
+                embed.set_author(name="Server Information")
                 embed.add_field(name="Host", value=str(host))
                 embed.add_field(name="Map", value=info.map_name)
                 embed.add_field(name="Players", value=f'{info.player_count}/{info.max_players}')
