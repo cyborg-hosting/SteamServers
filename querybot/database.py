@@ -88,11 +88,15 @@ class Database:
 
     async def delete_server(self, guild_id: int, name: str) -> bool:
         async with aiosqlite.connect(**self.options) as connection:
-            async with connection.execute(r"DELETE FROM server WHERE guild_id = ? AND name = ?", (guild_id, name)) as cursor:
+            try:
+                cursor = await connection.execute(r"DELETE FROM server WHERE guild_id = ? AND name = ?", (guild_id, name))
+                await connection.commit()
                 if cursor.rowcount:
                     return True
                 else:
                     return False
+            except sqlite3.DatabaseError:
+                return False
     
 
 class AutoCompleteCog(commands.Cog):
