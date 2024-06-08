@@ -1,26 +1,28 @@
-import os
+from os import getenv
+
 import discord
 from discord.ext import commands
 
-from querybot import BasicCog, QueryCog, AutoCompleteCog, Database
+from querybot import AdministrationCog, BasicCog, Database, QueryCog
 
-cogs = [ BasicCog, QueryCog, AutoCompleteCog ]
+cogs = [ AdministrationCog, BasicCog, QueryCog ]
 
-TOKEN = os.getenv("DISCORD_TOKEN")
-
-CONNECT_OPTIONS = { "database": "querybot.sqlite3" }
+TOKEN = getenv("DISCORD_TOKEN")
 
 class QueryBot(commands.Bot):
     async def setup_hook(self) -> None:
-        db = Database(CONNECT_OPTIONS)
+        db = Database(database="querybot.sqlite3")
         await db.create_table()
 
         for cog in cogs:
             await self.add_cog(cog(self, db))
 
+intents=discord.Intents.none()
+intents.message_content = True
+
 bot = QueryBot(
     command_prefix="s!",
-    intents=discord.Intents.none(),
+    intents=intents,
 )
 
 @bot.event
